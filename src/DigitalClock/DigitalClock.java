@@ -5,6 +5,11 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -14,6 +19,8 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 import javax.swing.JFrame;
+
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -22,6 +29,8 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.text.PlainDocument;
+
+
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -50,7 +59,8 @@ public class DigitalClock extends JFrame {
 	private List<String> noteList;
 	private JList<String> list;
 	private DefaultListModel<String> dlm;
-
+	private TrayIcon trayIcon;
+	private SystemTray tray;
 	private Calendar cal;
 	private static final String DEFAULT_NOTE = "Note:";
 	private JTextField textField;
@@ -84,11 +94,43 @@ public class DigitalClock extends JFrame {
 		setResizable(false);
 		setTitle("Digital Clock");
 		setBackground(Color.WHITE);
-		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		setBounds(100, 100, 450, 550);
 		setSize(490, 380);
 		getContentPane().setLayout(new BorderLayout(0, 0));
-
+		setIconImage(Toolkit.getDefaultToolkit().getImage("icon.png"));
+		
+		//Making popup menu for tray icon
+		PopupMenu popupMenu = new PopupMenu();
+		MenuItem openItem = new MenuItem("Open Digital Clock");
+        MenuItem exitItem = new MenuItem("Exit");
+        popupMenu.add(openItem);     
+        popupMenu.addSeparator();
+        popupMenu.add(exitItem);
+        
+        openItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            	setVisible(true);
+            }
+        });
+        
+        exitItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                tray.remove(trayIcon);
+                System.exit(0);
+            }
+        });
+		//Making tray icon
+		tray = SystemTray.getSystemTray();
+		trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage("icon.png"));
+		trayIcon.setPopupMenu(popupMenu);
+		trayIcon.setToolTip("Digital Clock");
+        trayIcon.setImageAutoSize(true);
+        try {
+			tray.add(trayIcon);
+		} catch (AWTException e1) {
+		}
+        
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.SOUTH);
 		panel.setBackground(Color.WHITE);
@@ -415,9 +457,9 @@ public class DigitalClock extends JFrame {
 					noteList.remove(selectedIndices[i] - deleteTimes);
 					dlm.removeElementAt(selectedIndices[i] - deleteTimes);
 				}
-			} else{
+			} else {
 				// remove noteList of the selected alarm then insert new on
-				if(selectedIndices.length == 1) {
+				if (selectedIndices.length == 1) {
 					noteList.remove(selectedIndices[0]);
 					noteList.add(selectedIndices[0], noteArea.getText());
 				}
@@ -555,8 +597,9 @@ public class DigitalClock extends JFrame {
 		if (e.getID() == WindowEvent.WINDOW_CLOSING) {
 			writeNoteList("note.data", (Vector<String>) noteList);
 			writeFile("list.data", (Vector<String>) alarmList, dlm);
-			dispose();
-			System.exit(0);
+			setVisible(false);
+			/*dispose();
+			System.exit(0);*/
 		}
 	}
 

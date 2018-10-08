@@ -102,7 +102,7 @@ public class DigitalClock extends JFrame {
 		
 		//Making popup menu for tray icon
 		PopupMenu popupMenu = new PopupMenu();
-		MenuItem openItem = new MenuItem("Open Digital Clock");
+		MenuItem openItem = new MenuItem("Show Digital Clock");
         MenuItem exitItem = new MenuItem("Exit");
         popupMenu.add(openItem);     
         popupMenu.addSeparator();
